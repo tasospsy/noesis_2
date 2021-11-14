@@ -17,7 +17,7 @@ nobs <- length(obsvars)
 ##      of GENERAL INTELLIGENCE
 ## ----------------------------------
 library(ockhamSEM)
-
+# TEST  
 # Create a temp matrix
 # p <- 15 # number of variables
 # temp_mat <- diag(p) # identity matrix
