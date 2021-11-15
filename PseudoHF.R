@@ -81,7 +81,8 @@ fitBFt     <- cfa( BF, sample.cov = temp_mat,
                    )
 fitHFasBFt <- cfa( BF, sample.cov = temp_mat, 
                    sample.nobs = 500, orthogonal = TRUE, std.lv = TRUE, 
-                   #constraints = constraints ,optim.force.converged = TRUE
+                   constraints = constraints 
+                   #,optim.force.converged = TRUE
                    )
 
 ## It is (relatively) slow! 
@@ -93,8 +94,10 @@ startt <- Sys.time()
 res <- run.fitprop(fitHFt, fitBFt, fitHFasBFt,
                    fit.measure=c("rmsea","cfi", "tli"),
                    rmethod="onion",reps=1000, cluster = cl, 
-                   saveR = TRUE,            # Save the reandom correlation matrices
-                   saveModel = TRUE)        # Save the model list (?)
+                   onlypos = TRUE,          # Only positive relations
+                   saveR = TRUE,            # Save the random correlation matrices
+                   saveModel = TRUE)        # Save the all fitted models 
+
 endt <- Sys.time()
 endt - startt
 #Time difference of 3.42861 hours
