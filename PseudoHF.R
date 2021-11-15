@@ -84,9 +84,11 @@ fitHFasBFt <- cfa( BF, sample.cov = temp_mat,
                    #constraints = constraints ,optim.force.converged = TRUE
                    )
 
-## It is (relatievly) slow! 
+## It is (relatively) slow! 
 ## Faster using parallel computing
-cl <- makeCluster(6)
+require(parallel)
+cores <- detectCores()-1
+cl <- makeCluster(cores)
 startt <- Sys.time()
 res <- run.fitprop(fitHFt, fitBFt, fitHFasBFt,
                    fit.measure=c("rmsea","cfi", "tli"),
