@@ -57,7 +57,7 @@ obl.fit <- cfa(obliq, sample.cov = WAIS_US,
              optim.force.converged = TRUE) #!
 
 
-# Test Fir Propensity using
+# Test Fit Propensity using
 # 1000 random matrices w/ "onion" method
 library(parallel)
 cores <- detectCores()-1
