@@ -1,4 +1,15 @@
-require( lavaan )
+## PseudoHF: FitHFasBF
+## Script was written by Kees Jan Kan to show
+## how we can derive a higher-order factor (HF) model from
+## a bifactor (BF) model by imposing constraints.
+
+## After examing the fit of these models I added 
+## a part on the script to 
+## inspect the fit propensity by using random 
+## correlation matrices.
+
+## Specifying the models
+library( lavaan )
 
 HF     <- 'visual  =~ l_1*x1 + l_2*x2 + l_3*x3
            textual =~ l_4*x4 + l_5*x5 + l_6*x6
@@ -38,6 +49,7 @@ constraints <- '
                l_9 == c3*l9
                '
 
+## Fit the models to the Holzinger data and isnspect the fit
 fitHF     <- cfa( HF, data = HolzingerSwineford1939, std.lv = TRUE )
 fitBF     <- cfa( BF, data = HolzingerSwineford1939, orthogonal = TRUE, std.lv = TRUE )
 fitHFasBF <- cfa( BF, data = HolzingerSwineford1939, orthogonal = TRUE, std.lv = TRUE, constraints = constraints )
@@ -46,12 +58,18 @@ anova( fitHF,     fitBF     )
 anova( fitHFasBF, fitBF     )
 anova( fitHF,     fitHFasBF )
 
+## -- FIT PROPENSITY -- 
 library(ockhamSEM)
 
+## By following ockhamSEM small tutorial:
 
+## Identity matrix
 p <- 9 # number of variables
 temp_mat <- diag(p) # identity matrix
 dimnames(temp_mat) <- list(paste0("x", seq(1, p)),paste0("x", seq(1, p)))
+
+## Fit the models to the identity matrix
+## without force them to converge, i.e., we expect a lot non-convergence issues!
 
 fitHFt     <- cfa( HF, sample.cov = temp_mat, 
                    sample.nobs = 500, std.lv = TRUE,
@@ -66,17 +84,22 @@ fitHFasBFt <- cfa( BF, sample.cov = temp_mat,
                    #constraints = constraints ,optim.force.converged = TRUE
                    )
 
+## It is (relatievly) slow! 
+## Faster using parallel computing
 cl <- makeCluster(6)
 startt <- Sys.time()
 res <- run.fitprop(fitHFt, fitBFt, fitHFasBFt,
-                     fit.measure=c("rmsea","cfi", "tli"),
-                     rmethod="onion",reps=1000, cluster = cl, 
-                   saveR = TRUE, saveModel = TRUE)
+                   fit.measure=c("rmsea","cfi", "tli"),
+                   rmethod="onion",reps=1000, cluster = cl, 
+                   saveR = TRUE,            # Save the reandom correlation matrices
+                   saveModel = TRUE)        # Save the model list (?)
 endt <- Sys.time()
 endt - startt
 #Time difference of 3.42861 hours
 stopCluster(cl)
+
 plot(res)
+
 summary(res)
 
 
