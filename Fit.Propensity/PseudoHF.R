@@ -58,6 +58,8 @@ anova( fitHF,     fitBF     )
 anova( fitHFasBF, fitBF     )
 anova( fitHF,     fitHFasBF )
 
+## Plotting 
+semPlot::semPaths(fitHFasBF)
 ## -- FIT PROPENSITY -- 
 library(ockhamSEM)
 
@@ -92,27 +94,37 @@ cores <- detectCores()-1
 cl <- makeCluster(cores)
 startt <- Sys.time()
 res <- run.fitprop(fitHFt, fitBFt, fitHFasBFt,
-                   fit.measure=c("rmsea","cfi", "tli"),
+                   fit.measure=c("rmsea","srmr", "tli"),
                    rmethod="onion",reps=1000, cluster = cl, 
                    onlypos = TRUE,          # Only positive relations
-                   saveR = TRUE,            # Save the random correlation matrices
+                   saveR = FALSE,            # Save the random correlation matrices
                    saveModel = TRUE)        # Save the all fitted models 
 
 endt <- Sys.time()
 endt - startt
-#Time difference of 3.42861 hours
+#Time difference of 49.59089 mins
 stopCluster(cl)
 
 plot(res)
 
 summary(res)
 
+## 5k 
+cores <- detectCores()-1
+cl <- makeCluster(cores)
+startt <- Sys.time()
+res5 <- run.fitprop(fitHFt, fitBFt, fitHFasBFt,
+                   fit.measure=c("rmsea","srmr", "tli"),
+                   rmethod="onion",reps=5000, cluster = cl, 
+                   onlypos = TRUE,          # Only positive relations
+                   saveR = FALSE,            # Save the random correlation matrices
+                   saveModel = TRUE)        # Save the all fitted models 
 
+endt <- Sys.time()
+endt - startt
 
-
-
-
-
+plot(res5)
+summary(res5)
 
 
 
