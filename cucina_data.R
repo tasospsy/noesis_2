@@ -5,10 +5,10 @@ studies <- c('Gignac & Watkins, 2013',
              'Gignac & Watkins, 2013',
              'Gignac & Watkins, 2013',
              'Gignac & Watkins, 2013',
-             'Gignac [11]',
-             'Gignac [13]',
-             'Golay & Lecerf',
-             'Niikelsela et al.')
+             'Gignac, 2005',
+             'Gignac, 2006',
+             'Golay & Lecerf, 2011',
+             'Niileksela et al., 2013')
 
 batteries <- c('WAIS-IV',
                'WAIS-IV',
@@ -28,6 +28,7 @@ HFtable <- tibble(
   RMSEA = c(.068, .064, .075, .074, .068, .064, .059, .067),
   AIC = c(314.75, 366.51, 347.28, 341.93, 443.97, 723.38, 359.50, 193.62),
   chisq = c(246.75, 298.51, 279.28, 273.93, 391.97, 663.38, 301.50, 179.62),
+  
   df = c(86,86,86,86,40,61,62,71)
 ) %>% add_column(Model = 'HF') %>% 
   rowid_to_column()
@@ -79,3 +80,16 @@ kbl(join,
   kable_styling(position = "center",
                 latex_options = c("scale_down")) %>% 
   footnote(general = "")
+
+## Summary statistics
+join %>% dplyr::select(-Battery.x, -df.x, -df.y, -Study.x) %>% 
+  pivot_longer(c(CFI.x:chisq.y), names_to = 'Stat') %>% 
+  mutate(FM = case_when(str_ends(Stat, '.x') ~ 'HF',
+                        str_ends(Stat, '.y') ~ 'BF')) %>% 
+  mutate(Stat = str_remove(Stat, '.x|.y$')) %>% 
+  group_by(FM, Stat) %>% 
+  summarize(min = min(value),
+            max = max(value),
+            mean = mean(value)
+            ) %>% 
+  data.frame()
