@@ -15,6 +15,8 @@ library(scales)
 ##################
 # 'Psychonetrics'# 
 
+#SOS:
+#Run only if you have salready run the simulations (see '2_nSIMULATIONS.R)
 setwd('/Users/tasospsy/Google Drive/_UvA/Research Internship/Noesis/')
 load('out.Rdata')
 
@@ -52,42 +54,42 @@ td_psyc <- td_hoi %>%
 #%>% as.data.frame() %>% format(scientific=TRUE)
 
 
-##################
-#### 'OpenMx' ####
-
-setwd("/Users/tasospsy/Google Drive/_UvA/Research Internship/BifactorLab/Simulation_paper/Lennert_res/")
-load("FIT_nrep_1000.RData")  
-#FIT
-
-## Cleaning and tidying the results (OpenMx)
-td_mx <- FIT %>% tibble() %>% unnest_longer(c(.)) %>% 
-  rename(True = '._id', info = '.') %>% 
-  mutate(True = case_when(True == 'gdat' ~ 'HF', 
-                          True == 'bdat' ~ 'BF',
-                          True == 'nwdat' ~ 'NW')) %>% 
-  unnest_longer(info) %>% rename(Fit = 'info_id') %>% 
-  group_by(Fit, True) %>% 
-    mutate(stat = names(FIT)) %>% 
-  pivot_wider(names_from = 'stat', values_from = 'info') %>% 
-  unnest(c(-Fit,-True)) %>% 
-  add_column(Rep = rep(1:(nrow(.)/(n_distinct(.$Fit)*n_distinct(.$True))),# 1:9000/3*3
-                                             (n_distinct(.$Fit)*n_distinct(.$True)) # 3*3
-  )) %>% 
-  relocate(Rep, True, Fit) 
-
-td_mx <- td_mx %>%  
-  rename(chisq = 'Chi',
-         df = 'ChiDoF',
-         pvalue = 'p',
-         AIC = `AIC par`,
-         BIC = `BIC par`) %>% 
-  select(Rep, True, Fit, chisq, df, pvalue,RMSEA, CFI, TLI, AIC, BIC) %>% 
-  add_column(pckg = 'OpenMx')
-
-################################################
-##### 'Combining 'Psychonetrics' & 'openMx' ####
+###################
+##### 'OpenMx' ####
 #
-td_comb <- bind_rows(td_psyc, td_mx)
+#setwd("/Users/tasospsy/Google Drive/_UvA/Research Internship/BifactorLab/Simulation_paper/Lennert_res/")
+#load("FIT_nrep_1000.RData")  
+##FIT
+#
+### Cleaning and tidying the results (OpenMx)
+#td_mx <- FIT %>% tibble() %>% unnest_longer(c(.)) %>% 
+#  rename(True = '._id', info = '.') %>% 
+#  mutate(True = case_when(True == 'gdat' ~ 'HF', 
+#                          True == 'bdat' ~ 'BF',
+#                          True == 'nwdat' ~ 'NW')) %>% 
+#  unnest_longer(info) %>% rename(Fit = 'info_id') %>% 
+#  group_by(Fit, True) %>% 
+#    mutate(stat = names(FIT)) %>% 
+#  pivot_wider(names_from = 'stat', values_from = 'info') %>% 
+#  unnest(c(-Fit,-True)) %>% 
+#  add_column(Rep = rep(1:(nrow(.)/(n_distinct(.$Fit)*n_distinct(.$True))),# 1:9000/3*3
+#                                             (n_distinct(.$Fit)*n_distinct(.$True)) # 3*3
+#  )) %>% 
+#  relocate(Rep, True, Fit) 
+#
+#td_mx <- td_mx %>%  
+#  rename(chisq = 'Chi',
+#         df = 'ChiDoF',
+#         pvalue = 'p',
+#         AIC = `AIC par`,
+#         BIC = `BIC par`) %>% 
+#  select(Rep, True, Fit, chisq, df, pvalue,RMSEA, CFI, TLI, AIC, BIC) %>% 
+#  add_column(pckg = 'OpenMx')
+#
+#################################################
+###### 'Combining 'Psychonetrics' & 'openMx' ####
+##
+#td_comb <- bind_rows(td_psyc, td_mx)
 
 exact.fit   <-  c("chisq", "df", "pvalue")
 approx.fit  <-  c("RMSEA", "CFI", "TLI", "NFI")
@@ -115,28 +117,21 @@ theme1 <- theme(plot.background = element_rect(fill = "white", color = NA), #bac
                 strip.background =element_rect(fill="grey100")
 )
 
-#################
-## Distribution fit plot
-#################
-
-dist.fit.plot <- function(vecd) {
- 
-}
 
 #####################
 ## exact fit plot
 exp1 <- td_psyc %>% 
   ggplot() +
   geom_histogram(aes(x = chisq, color = Fit, fill = Fit), 
-                 bins = 50, show.legend = TRUE, 
-                 alpha = 0.5, position = 'identity') + 
+                 bins = 30, show.legend = TRUE, 
+                 alpha = 0.4, position = 'identity') + 
   geom_vline(aes(xintercept= df, color = Fit), 
               linetype="dashed", size=.6)+
   #geom_text(aes(label = df, x = chisq, 
   #          y=chisq), hjust=1, vjust=1, size=3) +
   scale_x_continuous(
     labels = scales::number_format(accuracy = 1))+
-  facet_wrap(~True, scales = 'free') +
+  facet_grid(True~Fit, scales = 'free') +
   scale_color_brewer(palette = 'Set1')+ scale_fill_brewer(palette = 'Set1')+
   labs(y = expression(chi^2),
        x = '',
@@ -146,43 +141,63 @@ exp1 <- td_psyc %>%
   theme(#axis.text.x = element_text(angle = 40, vjust = 1, hjust=1),
         legend.position = 'none')
 exp1
+
 exp2 <- td_psyc %>% 
   ggplot() +
   geom_histogram(aes(x = pvalue, color = Fit, fill = Fit), 
-                 bins = 50, show.legend = TRUE, 
+                 bins = 15, show.legend = TRUE, 
                  alpha = 0.5, position = 'identity') + 
   scale_x_continuous(
     labels = scales::number_format(accuracy = 0.01))+
-  facet_wrap(~True, scales = 'free') +
+  facet_grid(True~Fit, scales = 'free') +
   scale_color_brewer(palette = 'Set1')+ scale_fill_brewer(palette = 'Set1')+
   
   labs(y = expression(italic('p'),paste('values')),
        x = 'Values',
        color='Fitting Model:',
        fill='Fitting Model:')+
-  theme_bw() + theme1
-
-expp <- exp1 / exp2
-expp
+  theme_bw() + theme1 +
+  theme(legend.position = 'none')
+exp2
 #####################
-## approximate & incremental fir plot
+## approximate & incremental fit plot
 td_psyc %>% 
-  pivot_longer(cols = all_of(approx.fit),
+  pivot_longer(cols = c("RMSEA"),
                names_to = 'stat', values_to = 'value') %>% 
   ggplot() +
-  geom_histogram(aes(x = value, color = Fit, fill = Fit), 
-                 bins = 40, show.legend = TRUE, 
-                 alpha = 0.5, position = 'identity') + 
+  geom_histogram(aes(x = value, color = stat, fill = stat), 
+                 bins = 30, show.legend = TRUE, 
+                 alpha = .6, position = 'identity') + 
   scale_x_continuous(
     labels = scales::number_format(accuracy = 0.01))+
-  facet_grid(True ~ stat, scales = 'free') +
-  scale_color_brewer(palette = 'Set1')+ scale_fill_brewer(palette = 'Set1')+
+  facet_grid(True ~ Fit, scales = 'free') +
+  scale_color_brewer(palette = 'Dark2')+ scale_fill_brewer(palette = 'Dark2')+
   #geom_text(data = SumBFBF, aes(label = lab), 
   #          x=Inf, y=Inf, hjust=1, vjust=1, size=3) +
   labs(y = '',
        x = 'Fit Values',
-       color='Fitting Model:',
-       fill='Fitting Model:')+
+       color='Statistic:',
+       fill='Statistic:')+
+  theme_bw() + theme1 +
+  theme(axis.text.x = element_text(angle = 40, vjust = 1, hjust=1))
+
+td_psyc %>% 
+  pivot_longer(cols = c("TLI", "CFI", "NFI"),
+               names_to = 'stat', values_to = 'value') %>% 
+  ggplot() +
+  geom_histogram(aes(x = value, color = stat, fill = stat), 
+                 bins = 30, show.legend = TRUE, 
+                 alpha = .6, position = 'identity') + 
+  scale_x_continuous(
+    labels = scales::number_format(accuracy = 0.01))+
+  facet_grid(True ~ Fit, scales = 'free') +
+  scale_color_brewer(palette = 'Dark2')+ scale_fill_brewer(palette = 'Dark2')+
+  #geom_text(data = SumBFBF, aes(label = lab), 
+  #          x=Inf, y=Inf, hjust=1, vjust=1, size=3) +
+  labs(y = '',
+       x = 'Fit Values',
+       color='Statistic:',
+       fill='Statistic:')+
   theme_bw() + theme1 +
   theme(axis.text.x = element_text(angle = 40, vjust = 1, hjust=1))
 
@@ -240,7 +255,7 @@ table.perc.wide <- table.perc %>%
   select(-n) %>%
   distinct(.)
 
-library(kableExtra)
+#library(kableExtra)
 
 kbl(table.perc.wide, 
     booktabs = T,
