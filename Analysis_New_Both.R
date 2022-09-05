@@ -1,22 +1,18 @@
-## Results (New)
-## Psychonetrics & OpenMx
-## 14/2/2022
+## ANALYSIS (New)
+## Psychonetrics (& OpenMx)
+## c.14/2/2022|m. 28/08/2022
 
-source(url("https://raw.githubusercontent.com/tasospsy/noesis/main/Background_Functions.R"))
 
-library(psychonetrics)
-library(OpenMx)
-library(tidyverse)
-library(scales)
+source(url("https://raw.githubusercontent.com/tasospsy/noesis/main/1_Preparation.R"))
 #################################
 # CLEANING AND TIDYING THE DATA # 
 #################################
 
 ##################
-# 'Psychonetrics'# 
+# 'Psychonetrics::'# 
 
-#SOS:
-#Run only if you have salready run the simulations (see '2_nSIMULATIONS.R)
+
+
 setwd('/Users/tasospsy/Google Drive/_UvA/Research Internship/Noesis/')
 load('out.Rdata')
 
@@ -53,6 +49,8 @@ td_psyc <- td_hoi %>%
   add_column(pckg = 'Psychonetrics') 
 #%>% as.data.frame() %>% format(scientific=TRUE)
 
+## NOTE: Uncomment and RUN the lines 52-90 ONLY if 
+## you would like to compare psychonetrics:: and OpenMx:: results
 
 ###################
 ##### 'OpenMx' ####
@@ -91,6 +89,7 @@ td_psyc <- td_hoi %>%
 ##
 #td_comb <- bind_rows(td_psyc, td_mx)
 
+## Re-write the old names
 exact.fit   <-  c("chisq", "df", "pvalue")
 approx.fit  <-  c("RMSEA", "CFI", "TLI", "NFI")
 comp.criteria    <-  c("AIC", "BIC")
@@ -120,7 +119,7 @@ theme1 <- theme(plot.background = element_rect(fill = "white", color = NA), #bac
 
 #####################
 ## exact fit plot
-exp1 <- td_psyc %>% 
+td_psyc %>% 
   ggplot() +
   geom_histogram(aes(x = chisq, color = Fit, fill = Fit), 
                  bins = 30, show.legend = TRUE, 
@@ -140,9 +139,9 @@ exp1 <- td_psyc %>%
   theme_bw() + theme1 + 
   theme(#axis.text.x = element_text(angle = 40, vjust = 1, hjust=1),
         legend.position = 'none')
-exp1
 
-exp2 <- td_psyc %>% 
+## P-values of exact fit plot
+td_psyc %>% 
   ggplot() +
   geom_histogram(aes(x = pvalue, color = Fit, fill = Fit), 
                  bins = 15, show.legend = TRUE, 
@@ -158,9 +157,9 @@ exp2 <- td_psyc %>%
        fill='Fitting Model:')+
   theme_bw() + theme1 +
   theme(legend.position = 'none')
-exp2
-#####################
-## approximate & incremental fit plot
+
+#######################
+## approximate fit plot
 td_psyc %>% 
   pivot_longer(cols = c("RMSEA"),
                names_to = 'stat', values_to = 'value') %>% 
@@ -181,13 +180,18 @@ td_psyc %>%
   theme_bw() + theme1 +
   theme(axis.text.x = element_text(angle = 40, vjust = 1, hjust=1))
 
+#########################
+## & incremental fit plot
 td_psyc %>% 
   pivot_longer(cols = c("TLI", "CFI", "NFI"),
                names_to = 'stat', values_to = 'value') %>% 
   ggplot() +
-  geom_histogram(aes(x = value, color = stat, fill = stat), 
-                 bins = 30, show.legend = TRUE, 
-                 alpha = .6, position = 'identity') + 
+  geom_violin(aes(x = value, y = stat, fill = stat, 
+                  color = stat), show.legend = FALSE, 
+              alpha = .6, trim = FALSE) + 
+  geom_boxplot(aes(x = value, y = stat, color = stat), show.legend = FALSE, 
+              alpha = .6, width = .2, 
+              outlier.shape=NA) + 
   scale_x_continuous(
     labels = scales::number_format(accuracy = 0.01))+
   facet_grid(True ~ Fit, scales = 'free') +
@@ -199,10 +203,12 @@ td_psyc %>%
        color='Statistic:',
        fill='Statistic:')+
   theme_bw() + theme1 +
-  theme(axis.text.x = element_text(angle = 40, vjust = 1, hjust=1))
+  theme(axis.text.x = element_text(angle = 40, vjust = 1, hjust=1),
+        axis.text.y = element_text())
 
 
-## Descriptives table 
+## Descriptives table of 
+## approximate & incremental fit
 td_psyc %>% 
   pivot_longer(cols = all_of(approx.fit),
                names_to = 'stat', values_to = 'value') %>% 
@@ -254,16 +260,20 @@ table.perc.wide <- table.perc %>%
   fill(everything(), .direction = "downup") %>% 
   select(-n) %>%
   distinct(.)
+table.perc.wide
+
+## Uncomment and RUN the lines 264-271 ONLY
+## if you would like the above table in latex format
 
 #library(kableExtra)
+#kbl(table.perc.wide, 
+#    booktabs = T,
+#    format = 'latex',
+#    caption = "Do fit indices pick the right model?") %>% 
+#  kable_styling(position = "center",
+#                latex_options = c("scale_down")) %>% 
+#  footnote(general = "test")
 
-kbl(table.perc.wide, 
-    booktabs = T,
-    format = 'latex',
-    caption = "Do fit indices pick the right model?") %>% 
-  kable_styling(position = "center",
-                latex_options = c("scale_down")) %>% 
-  footnote(general = "test")
 ##====================
 ## plot percentages %
 ##====================
@@ -273,7 +283,8 @@ table.perc %>% ggplot(aes(x=fct_relevel(IC,
   geom_col( aes(color= Fit, fill = Fit), width = .15, alpha= .7 ) +
   geom_text(aes(x=IC, y=percent, label = percent, color = Fit),
             position = position_stack(vjust = .5), 
-            vjust = -.9, family ='mono') +
+            vjust = -.9, family ='mono', 
+            show.legend = FALSE) +
   scale_color_brewer(palette = 'Set1')+ 
   scale_fill_brewer(palette = 'Set1') +
   coord_flip() +
@@ -285,7 +296,43 @@ table.perc %>% ggplot(aes(x=fct_relevel(IC,
   theme_bw() + theme1 +
   theme(axis.text.y=element_text(size=10, color = "black"))
   
+## DRAFT
+HFvsBF <- out %>% tibble() %>% unnest_longer(c(.)) %>% 
+  unnest_wider(c(.)) %>% 
+  rename("True" = "._id") %>% 
+  #pivot_longer(cols = c(HFmodel, BFmodel, NWmodel), 
+  #             names_to = 'Fit', 
+  #             values_to = 'models') %>% 
+  select(-'NWmodel') %>% 
+  mutate(Dchisq = map2(.x = HFmodel, 
+                       .y = BFmodel,
+                       ~ psychonetrics::compare(.x, .y))) %>% 
+  select(-HFmodel, -BFmodel) 
+
+HFvsBF %>% 
+  unnest_wider(Dchisq)  %>% 
+  select(True, model, Chisq_diff, DF_diff, p_value) %>% 
+  unnest(model:p_value) %>% 
+  filter(!if_any(model:p_value, is.na)) %>% 
+  #distinct(model) %>% 
+  select(-model) %>% 
   
-  
+  ggplot() +
+  geom_histogram(aes(x = Chisq_diff, color = True, fill = True), 
+                 bins = 30, show.legend = FALSE, 
+                 alpha = .6, position = 'identity') + 
+  scale_x_continuous(
+    labels = scales::number_format(accuracy = 0.01))+
+  facet_wrap(~True, scales = 'free') +
+  scale_color_brewer(palette = 'Dark2')+ scale_fill_brewer(palette = 'Dark2')+
+  #geom_text(data = SumBFBF, aes(label = lab), 
+  #          x=Inf, y=Inf, hjust=1, vjust=1, size=3) +
+  labs(y = expression(chi^2-diff),
+       x = '',
+       color='',
+       fill='')+
+  theme_bw() + theme1 +
+  theme(axis.text.x = element_text(angle = 40, vjust = 1, hjust=1))
+
   
   
