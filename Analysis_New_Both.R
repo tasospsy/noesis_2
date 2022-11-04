@@ -1,6 +1,6 @@
 ## ANALYSIS (New)
 ## Psychonetrics (& OpenMx)
-## c.14/2/2022|m. 28/08/2022
+## c.14/2/2022| m. 03/12/2022
 
 
 source(url("https://raw.githubusercontent.com/tasospsy/noesis/main/1_Preparation.R"))
@@ -16,10 +16,10 @@ source(url("https://raw.githubusercontent.com/tasospsy/noesis/main/1_Preparation
 setwd('/Users/tasospsy/Google Drive/_UvA/Research Internship/Noesis/')
 load('out.Rdata')
 
-
+## Unnest the results using a custom function
 hoi <- Decomp2(output = out, extract = "fitmeasures")
 
-## Cleaning and tidying the results! (New) 
+## Cleaning and tidying the results
 td_hoi <- hoi %>% tibble() %>% unnest_longer(c(.)) %>% 
   rename(Fit = '._id', info = '.') %>% 
   group_by(Fit) %>% 
@@ -33,7 +33,7 @@ td_hoi <- hoi %>% tibble() %>% unnest_longer(c(.)) %>%
   relocate(Rep, True, Fit) 
   
 
-# Fit measures for this study
+# Fit measures used for this study
 exact.fit   <-  c("chisq", "df", "pvalue")
 approx.fit  <-  c("rmsea", "cfi", "tli", "nfi")
 comp.criteria    <-  c("aic.ll", "bic")
@@ -94,12 +94,14 @@ exact.fit   <-  c("chisq", "df", "pvalue")
 approx.fit  <-  c("RMSEA", "CFI", "TLI", "NFI")
 comp.criteria    <-  c("AIC", "BIC")
 
-########################
-## PLOTS ##
-########################
+
+# -------------------------------------------------------------------------
+# Results Analysis & Visualization -----------------------------------------
+# -------------------------------------------------------------------------
+
+## creating a custom theme
 theme1 <- theme(plot.background = element_rect(fill = "white", color = NA), #background color
                 text = element_text(family = "mono", color = "black"), # color of all text in the plot 
-                plot.title = element_text(hjust = 0.5, color = "black", size = 13), # specs of the title
                 strip.text = element_text(colour = "black", size = 15), # specs of the text inside plot
                 panel.grid.major.x = element_line(size = .5), # change the grid layout
                 panel.grid.major.y = element_line(size = .5), # change the grid layout
@@ -107,108 +109,117 @@ theme1 <- theme(plot.background = element_rect(fill = "white", color = NA), #bac
                 panel.grid.minor.y = element_blank(), # remove the grid layout
                 axis.text=element_text(size=11, color = "black"), # specs of the text in axis
                 #axis.text.x = element_blank(),
-                axis.text.y = element_blank(),
+                #axis.text.y = element_blank(),
                 legend.position = "bottom", # legend down
                 #legend.title = element_blank(), # remove legend title,
                 legend.text = element_text(colour = "black", size = 10),
-                #plot.title = element_markdown(size = 12,hjust = 0,lineheight = 1, 
-                #                              color = "black", family = 'mono'),
-                strip.background =element_rect(fill="grey100")
+                strip.background =element_rect(fill="grey100"),
+                plot.margin = unit(c(1,1,1,1), "lines"),
+                plot.title = element_text(hjust = 0.5, color = "black", size = 13), # specs of the title
+                plot.tag.position = 'right',
+                plot.tag = element_text(
+                  size = 12,                     # Font size
+                  hjust = 1,                     # Horizontal adjustment
+                  vjust = 1,                     # Vertical adjustment
+                  angle = -90,                   # Font angle
+                  margin = margin(0, 0, 0, 10)), # Margins (t, r, b, l)
+                plot.subtitle =   element_text(
+                  size = 12,                     # Font size
+                  hjust = .5,                     # Horizontal adjustment
+                  vjust = 1,                     # Vertical adjustment
+                  margin = margin(0, 0, 5, 0)) # Margins (t, r, b, l)
 )
 
 
-#####################
-## exact fit plot
+
+# -------------------------------------------------------------------------
+# Exact Fit plot ----------------------------------------------------------
 td_psyc %>% 
   ggplot() +
   geom_histogram(aes(x = chisq, color = Fit, fill = Fit), 
-                 bins = 30, show.legend = TRUE, 
-                 alpha = 0.4, position = 'identity') + 
+                 bins = 45, show.legend = FALSE, 
+                 alpha = 0.2, position = 'identity') + 
   geom_vline(aes(xintercept= df, color = Fit), 
-              linetype="dashed", size=.6)+
-  #geom_text(aes(label = df, x = chisq, 
-  #          y=chisq), hjust=1, vjust=1, size=3) +
+              linetype="dashed", size=.6, show.legend = FALSE)+
   scale_x_continuous(
     labels = scales::number_format(accuracy = 1))+
-  facet_grid(True~Fit, scales = 'free') +
-  scale_color_brewer(palette = 'Set1')+ scale_fill_brewer(palette = 'Set1')+
-  labs(y = expression(chi^2),
-       x = '',
+  facet_grid(cols = vars(True), 
+             rows = vars(Fit),
+             scales = 'free') +
+  scale_color_brewer(palette = 'Dark2')+ 
+  scale_fill_brewer(palette = 'Dark2') +
+  labs(y = "",
+       x = expression(chi^2 ~ "value"),
        color='Fitting Model:',
-       fill='Fitting Model:') +
-  theme_bw() + theme1 + 
-  theme(#axis.text.x = element_text(angle = 40, vjust = 1, hjust=1),
-        legend.position = 'none')
+       fill='Fitting Model:',
+       tag = "Fitting Model",
+       subtitle = 'True Model') +
+  theme_bw() + theme1 
 
-## P-values of exact fit plot
+# -------------------------------------------------------------------------
+# P-values of Exact Fit Plot ----------------------------------------------
 td_psyc %>% 
   ggplot() +
   geom_histogram(aes(x = pvalue, color = Fit, fill = Fit), 
-                 bins = 15, show.legend = TRUE, 
-                 alpha = 0.5, position = 'identity') + 
+                 bins = 15, show.legend = FALSE, 
+                 alpha = 0.2, position = 'identity') + 
   scale_x_continuous(
     labels = scales::number_format(accuracy = 0.01))+
-  facet_grid(True~Fit, scales = 'free') +
-  scale_color_brewer(palette = 'Set1')+ scale_fill_brewer(palette = 'Set1')+
-  
-  labs(y = expression(italic('p'),paste('values')),
-       x = 'Values',
+  facet_grid(cols = vars(True), 
+             rows = vars(Fit),
+             scales = 'free') +
+  scale_color_brewer(palette = 'Dark2')+ 
+  scale_fill_brewer(palette = 'Dark2') +
+  labs(y = "",
+       x = expression(italic('p')~"-value"),
        color='Fitting Model:',
-       fill='Fitting Model:')+
-  theme_bw() + theme1 +
-  theme(legend.position = 'none')
-
-#######################
-## approximate fit plot
-td_psyc %>% 
-  pivot_longer(cols = c("RMSEA"),
-               names_to = 'stat', values_to = 'value') %>% 
-  ggplot() +
-  geom_histogram(aes(x = value, color = stat, fill = stat), 
-                 bins = 30, show.legend = TRUE, 
-                 alpha = .6, position = 'identity') + 
-  scale_x_continuous(
-    labels = scales::number_format(accuracy = 0.01))+
-  facet_grid(True ~ Fit, scales = 'free') +
-  scale_color_brewer(palette = 'Dark2')+ scale_fill_brewer(palette = 'Dark2')+
-  #geom_text(data = SumBFBF, aes(label = lab), 
-  #          x=Inf, y=Inf, hjust=1, vjust=1, size=3) +
-  labs(y = '',
-       x = 'Fit Values',
-       color='Statistic:',
-       fill='Statistic:')+
-  theme_bw() + theme1 +
-  theme(axis.text.x = element_text(angle = 40, vjust = 1, hjust=1))
-
-#########################
-## & incremental fit plot
-td_psyc %>% 
-  pivot_longer(cols = c("TLI", "CFI", "NFI"),
-               names_to = 'stat', values_to = 'value') %>% 
-  ggplot() +
-  geom_violin(aes(x = value, y = stat, fill = stat, 
-                  color = stat), show.legend = FALSE, 
-              alpha = .6, trim = FALSE) + 
-  geom_boxplot(aes(x = value, y = stat, color = stat), show.legend = FALSE, 
-              alpha = .6, width = .2, 
-              outlier.shape=NA) + 
-  scale_x_continuous(
-    labels = scales::number_format(accuracy = 0.01))+
-  facet_grid(True ~ Fit, scales = 'free') +
-  scale_color_brewer(palette = 'Dark2')+ scale_fill_brewer(palette = 'Dark2')+
-  #geom_text(data = SumBFBF, aes(label = lab), 
-  #          x=Inf, y=Inf, hjust=1, vjust=1, size=3) +
-  labs(y = '',
-       x = 'Fit Values',
-       color='Statistic:',
-       fill='Statistic:')+
-  theme_bw() + theme1 +
-  theme(axis.text.x = element_text(angle = 40, vjust = 1, hjust=1),
-        axis.text.y = element_text())
+       fill='Fitting Model:',
+       tag = "Fitting Model",
+       subtitle = 'True Model') +
+  theme_bw() + theme1
 
 
-## Descriptives table of 
-## approximate & incremental fit
+
+# -------------------------------------------------------------------------
+# approximate & Incremental Plot Function ---------------------------------
+
+Plot_Other_Fit <- function(dat, statistic = c("RMSEA", "TLI", "CFI", "NFI")){
+  dat %>% 
+    pivot_longer(cols = any_of(statistic),
+                 names_to = 'stat', values_to = 'value') %>% 
+    ggplot() +
+    geom_histogram(aes(x = value, color = Fit, fill = Fit), 
+                   bins = 35, show.legend = FALSE, 
+                   alpha = .2, position = 'identity') + 
+    scale_x_continuous(
+      labels = scales::number_format(accuracy = 0.01))+
+    facet_grid(cols = vars(True), 
+               rows = vars(Fit),
+               scales = 'free') +
+    scale_color_brewer(palette = 'Dark2')+ 
+    scale_fill_brewer(palette = 'Dark2') +
+    labs(y = '',
+         x = paste(statistic,'Values'),
+         color='Statistic:',
+         fill='Statistic:',
+         tag = "Fitting Model",
+         subtitle = 'True Model') +
+    theme_bw() + theme1 +
+    theme(axis.text.x = element_text(angle = 40, vjust = 1, hjust=1))
+}
+
+
+## Approximate fit plot
+Plot_Other_Fit(dat = td_psyc, statistic = c('RMSEA'))
+ 
+
+## Incremental fit plot
+Plot_Other_Fit(dat = td_psyc, statistic = c('CFI'))
+Plot_Other_Fit(dat = td_psyc, statistic = c('TLI'))
+Plot_Other_Fit(dat = td_psyc, statistic = c('NFI'))
+
+# Descriptives of approximate & incremental fit ---------------------------
+
 td_psyc %>% 
   pivot_longer(cols = all_of(approx.fit),
                names_to = 'stat', values_to = 'value') %>% 
@@ -232,15 +243,16 @@ td_psyc %>%
                             )) %>% 
   group_by(stat) %>% group_split()
 
-##==========================================
-# Test: Do fit Indices pick the right model?
-##==========================================
-##====================
-## table percentages %
-##====================
-table.perc <- td_psyc %>% 
+
+
+# Create a frequency table ------------------------------------------------
+
+table.perc <- 
+  td_psyc %>% 
     dplyr::select(True, Fit, RMSEA, CFI, TLI, NFI, AIC, BIC, Rep) %>% 
-    group_by(True, Rep) %>% 
+  #filter(True=='NW') %>%  
+  #filter(Fit!='NW') %>% 
+  group_by(True, Rep) %>% 
     summarize(RMSEA = Fit[which.min(RMSEA)],
               AIC   = Fit[which.min(AIC)],
               BIC   = Fit[which.min(BIC)],
@@ -252,17 +264,16 @@ table.perc <- td_psyc %>%
     gather(key = "IC", value = "Fit", - True, -Rep) %>% 
     group_by(True, Fit, IC) %>% 
     count(Fit) %>% 
-    mutate(percent = n /10) 
+    mutate(percent = n /10)
 
 table.perc.wide <- table.perc %>% 
   group_by(True, Fit, IC) %>% 
-  pivot_wider(names_from = True, values_from = percent) %>% 
-  fill(everything(), .direction = "downup") %>% 
   select(-n) %>%
-  distinct(.)
+  pivot_wider(names_from = True, values_from = percent) 
+
 table.perc.wide
 
-## Uncomment and RUN the lines 264-271 ONLY
+## Uncomment and RUN the commented lines below
 ## if you would like the above table in latex format
 
 #library(kableExtra)
@@ -274,49 +285,74 @@ table.perc.wide
 #                latex_options = c("scale_down")) %>% 
 #  footnote(general = "test")
 
-##====================
-## plot percentages %
-##====================
-table.perc %>% ggplot(aes(x=fct_relevel(IC,
-                                        'RMSEA', 'CFI', 'TLI', 'NFI', 
-                                        'AIC', 'BIC'), y=percent)) +
-  geom_col( aes(color= Fit, fill = Fit), width = .15, alpha= .7 ) +
-  geom_text(aes(x=IC, y=percent, label = percent, color = Fit),
-            position = position_stack(vjust = .5), 
-            vjust = -.9, family ='mono', 
+
+# Plot the frequencies ----------------------------------------------------
+table.perc.wide %>% 
+  pivot_longer(cols = c('BF', 'HF', 'NW'),
+               names_to = 'True', values_to = 'percent') %>% 
+  replace(is.na(.), 0) %>% 
+  ggplot(aes(x=fct_relevel(IC,'RMSEA', 'CFI', 'TLI', 'NFI','AIC', 'BIC'), 
+             y=percent)) +
+  geom_col( aes(fill = Fit), width = .30, alpha= .7, color= 'white', 
             show.legend = FALSE) +
-  scale_color_brewer(palette = 'Set1')+ 
-  scale_fill_brewer(palette = 'Set1') +
+  geom_point(aes(color = Fit), show.legend = FALSE)+
+  geom_text(aes(x=IC, y=percent, label = paste0(percent,'%')),
+            vjust=.5,hjust=-.2,
+            color= 'black', family ='mono', 
+            show.legend = FALSE) +
+  scale_color_brewer(palette = 'Dark2')+ 
+  scale_fill_brewer(palette = 'Dark2') +
   coord_flip() +
-  facet_wrap(~True) +
+  scale_y_continuous(breaks = c(0,25, 50, 75, 100), limits = c(0,122))+
+  facet_grid(cols = vars(True), 
+             rows = vars(Fit),
+             scales = 'free') +
   labs(y = 'Frequency (%)',
        x = 'Fit statistic',
        color='Fitting Model:',
-       fill='Fitting Model:')+
+       fill='Fitting Model:',
+       tag = "Fitting Model",
+       subtitle = 'True Model') +
   theme_bw() + theme1 +
-  theme(axis.text.y=element_text(size=10, color = "black"))
+  theme(panel.grid.major.y = element_blank())
   
-## DRAFT
+
+# Comparison Tests - HF Vs BF ----------------------------------------------------
+
+## Extract the comparison (HF Vs BF) results
 HFvsBF <- out %>% tibble() %>% unnest_longer(c(.)) %>% 
   unnest_wider(c(.)) %>% 
   rename("True" = "._id") %>% 
-  #pivot_longer(cols = c(HFmodel, BFmodel, NWmodel), 
-  #             names_to = 'Fit', 
-  #             values_to = 'models') %>% 
   select(-'NWmodel') %>% 
   mutate(Dchisq = map2(.x = HFmodel, 
                        .y = BFmodel,
                        ~ psychonetrics::compare(.x, .y))) %>% 
   select(-HFmodel, -BFmodel) 
 
-HFvsBF %>% 
+## Tidy the results
+HFvsBF_table <- HFvsBF%>% 
   unnest_wider(Dchisq)  %>% 
-  select(True, model, Chisq_diff, DF_diff, p_value) %>% 
+  select(True, model, Chisq_diff, DF_diff, p_value, AIC, BIC) %>% 
   unnest(model:p_value) %>% 
   filter(!if_any(model:p_value, is.na)) %>% 
   #distinct(model) %>% 
-  select(-model) %>% 
-  
+  select(-model) 
+
+## When BF is the true model
+cat(paste('According to chisq difference test, if BF is the true model, the BF is prefered over the HF in',
+HFvsBF_table %>% filter(True == 'BF') %>% filter(p_value <= .05) %>% 
+  count() %>% mutate(. /10) %>% paste0('%'), 'of the cases'))
+## When HF is the true model
+cat(paste('According to chisq difference test, if HF is the true model, the BF is prefered over the HF in',
+            HFvsBF_table %>% filter(True == 'HF') %>% filter(p_value <= .05) %>% 
+              count() %>% mutate(. /10) %>% paste0('%'), 'of the cases'))
+## When NW is the true model
+cat(paste('According to chisq difference test, if NW is the true model, the BF is prefered over the HF in',
+            HFvsBF_table %>% filter(True == 'NW') %>% filter(p_value <= .05) %>% 
+              count() %>% mutate(. /10) %>% paste0('%'), 'of the cases'))
+
+## (EXTRA) plot the χ2 diff. distribution
+HFvsBF_table %>% 
   ggplot() +
   geom_histogram(aes(x = Chisq_diff, color = True, fill = True), 
                  bins = 30, show.legend = FALSE, 
@@ -325,8 +361,6 @@ HFvsBF %>%
     labels = scales::number_format(accuracy = 0.01))+
   facet_wrap(~True, scales = 'free') +
   scale_color_brewer(palette = 'Dark2')+ scale_fill_brewer(palette = 'Dark2')+
-  #geom_text(data = SumBFBF, aes(label = lab), 
-  #          x=Inf, y=Inf, hjust=1, vjust=1, size=3) +
   labs(y = expression(chi^2-diff),
        x = '',
        color='',
@@ -334,5 +368,7 @@ HFvsBF %>%
   theme_bw() + theme1 +
   theme(axis.text.x = element_text(angle = 40, vjust = 1, hjust=1))
 
-  
+
+
+
   
