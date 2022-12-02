@@ -137,14 +137,14 @@ theme1 <- theme(plot.background = element_rect(fill = "white", color = NA), #bac
 td_psyc %>% 
   ggplot() +
   geom_histogram(aes(x = chisq, color = Fit, fill = Fit), 
-                 bins = 45, show.legend = FALSE, 
+                 bins = 40, show.legend = FALSE, 
                  alpha = 0.2, position = 'identity') + 
   geom_vline(aes(xintercept= df, color = Fit), 
               linetype="dashed", size=.6, show.legend = FALSE)+
   scale_x_continuous(
     labels = scales::number_format(accuracy = 1))+
-  facet_grid(cols = vars(True), 
-             rows = vars(Fit),
+  facet_grid(cols = vars(factor(True, levels=c('HF', 'BF','NW'))), 
+             rows = vars(factor(Fit, levels=c('HF', 'BF','NW'))),
              scales = 'free') +
   scale_color_brewer(palette = 'Dark2')+ 
   scale_fill_brewer(palette = 'Dark2') +
@@ -165,8 +165,8 @@ td_psyc %>%
                  alpha = 0.2, position = 'identity') + 
   scale_x_continuous(
     labels = scales::number_format(accuracy = 0.01))+
-  facet_grid(cols = vars(True), 
-             rows = vars(Fit),
+  facet_grid(cols = vars(factor(True, levels=c('HF', 'BF','NW'))), 
+             rows = vars(factor(Fit, levels=c('HF', 'BF','NW'))),
              scales = 'free') +
   scale_color_brewer(palette = 'Dark2')+ 
   scale_fill_brewer(palette = 'Dark2') +
@@ -189,12 +189,12 @@ Plot_Other_Fit <- function(dat, statistic = c("RMSEA", "TLI", "CFI", "NFI")){
                  names_to = 'stat', values_to = 'value') %>% 
     ggplot() +
     geom_histogram(aes(x = value, color = Fit, fill = Fit), 
-                   bins = 35, show.legend = FALSE, 
+                   bins = 40, show.legend = FALSE, 
                    alpha = .2, position = 'identity') + 
     scale_x_continuous(
       labels = scales::number_format(accuracy = 0.01))+
-    facet_grid(cols = vars(True), 
-               rows = vars(Fit),
+    facet_grid(cols = vars(factor(True, levels=c('HF', 'BF','NW'))), 
+               rows = vars(factor(Fit, levels=c('HF', 'BF','NW'))),
                scales = 'free') +
     scale_color_brewer(palette = 'Dark2')+ 
     scale_fill_brewer(palette = 'Dark2') +
@@ -304,8 +304,8 @@ table.perc.wide %>%
   scale_fill_brewer(palette = 'Dark2') +
   coord_flip() +
   scale_y_continuous(breaks = c(0,25, 50, 75, 100), limits = c(0,122))+
-  facet_grid(cols = vars(True), 
-             rows = vars(Fit),
+  facet_grid(cols = vars(factor(True, levels=c('HF', 'BF','NW'))), 
+             rows = vars(factor(Fit, levels=c('HF', 'BF','NW'))),
              scales = 'free') +
   labs(y = 'Frequency (%)',
        x = 'Fit statistic',
@@ -359,7 +359,7 @@ HFvsBF_table %>%
                  alpha = .6, position = 'identity') + 
   scale_x_continuous(
     labels = scales::number_format(accuracy = 0.01))+
-  facet_wrap(~True, scales = 'free') +
+  facet_wrap(~factor(True, levels=c('HF', 'BF','NW')), scales = 'free') +
   scale_color_brewer(palette = 'Dark2')+ scale_fill_brewer(palette = 'Dark2')+
   labs(y = expression(chi^2-diff),
        x = '',
