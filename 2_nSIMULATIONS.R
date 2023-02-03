@@ -1,10 +1,15 @@
-## Internship project
-## Tasos Psychogyiopoulos
-## 2_nSIMULATIONS
-## c.15/3/2021
+# -------------------------------------------------------------------------
+## SUPPLEMENTARY MATERIAL for the article:
+## "A network perspective on why bifactor models outperform
+## higher order g factor models", by
+## Psychogyiopoulos, A., Groot, L.J., Ten Hove, D., De Jonge, H., Kan, K.J.
+# -------------------------------------------------------------------------
+# 2. Simulations ----------------------------------------------------------
+# -------------------------------------------------------------------------
 
-# ---- required sources
-source(url("https://raw.githubusercontent.com/tasospsy/noesis/main/1_Preparation.R"))
+## RUN '1_Preparation.R' FIRST!
+
+# Set Working Directory ---------------------------------------------------
 
 ## -- Data generation procedure
 set.seed(1992) # Set a seed
@@ -39,7 +44,6 @@ out <- lapply(Rawdata, lapply, function(d) mapply(ModelsFitFun,
 endt <- Sys.time()
 endt-startt
 #  save(out, file = "out.Rda")
-
 
 # NOTE:
 # Time difference of 53.93103 mins

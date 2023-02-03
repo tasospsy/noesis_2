@@ -8,9 +8,8 @@
 # -------------------------------------------------------------------------
 
 # Load Packages -----------------------------------------------------------
-Packages <- c("psychonetrics", "qgraph", "MASS", "dplyr", "GPArotation", "ucminf", "tidyverse")
-invisible(lapply(Packages, library, character.only = TRUE))
-
+Packages <- c("psychonetrics", "patchwork", "qgraph", "MASS", "dplyr", "GPArotation", "ucminf", "tidyverse")
+invisible(lapply(Packages, install_or_source_lib))
 
 # Set Working Directory ---------------------------------------------------
 setwd("~/")
@@ -103,8 +102,6 @@ modslist <- list(HF = hmodel, BF = BFmodel, NW = NWmodel)
 
 ## Chisq Difference test for the three models
 testmods <- psychonetrics::compare(hmodel, BFmodel, NWmodel)
-testmods
-
 
 # Model Vizualization -----------------------------------------------------
 # Plot Network model ------------------------------------------------------

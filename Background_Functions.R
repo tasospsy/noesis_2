@@ -7,8 +7,12 @@
 # 0. Background Functions ----------------------------------------------------------
 # -------------------------------------------------------------------------
 
+
+# NOTE! - DO NOT RUN  -----------------------------------------------------
+
+
 ## Install packages Function (from the internet)
-installpackages <- function(pkg){
+install_or_source_lib <- function(pkg){
   new.pkg <- pkg[!(pkg %in% installed.packages()[,1])]
   if (length(new.pkg))
     install.packages(new.pkg, dependencies = TRUE)
