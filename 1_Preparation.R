@@ -7,15 +7,15 @@
 # 1. Preparation ----------------------------------------------------------
 # -------------------------------------------------------------------------
 
-# Load Packages -----------------------------------------------------------
-Packages <- c("psychonetrics", "patchwork", "qgraph", "MASS", "dplyr", "GPArotation", "ucminf", "tidyverse")
-invisible(lapply(Packages, install_or_source_lib))
-
 # Set Working Directory ---------------------------------------------------
 setwd("~/")
 
 # Required Sources --------------------------------------------------------
 source(url("https://raw.githubusercontent.com/tasospsy/noesis/main/Background_Functions.R"))
+
+# Load Packages -----------------------------------------------------------
+Packages <- c("psychonetrics", "patchwork", "qgraph", "MASS", "dplyr", "GPArotation", "ucminf", "tidyverse")
+invisible(lapply(Packages, install_or_source_lib))
 
 # Load data ---------------------------------------------------------------
 load(url("https://github.com/tasospsy/noesis/blob/main/WAIS_US.Rdata?raw=true"))
